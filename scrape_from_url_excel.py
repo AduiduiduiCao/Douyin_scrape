@@ -15,13 +15,13 @@ URL_COLUMN = "URL"
 
 # 从第几行（0 基）开始处理；Excel 视觉上是“行号 - 1”
 # 例如：83 行开始 -> START_ROW = 82
-START_ROW = 82
+START_ROW = 1
 
 # 最多处理多少行；None 表示从 START_ROW 一直处理到文件末尾
 MAX_ROWS: Optional[int] = None
 
 # 每个视频页面打开后等待多少秒，用于加载接口和收集 Network 日志
-WAIT_AFTER_OPEN = 10
+WAIT_AFTER_OPEN = 5
 
 # 每个 URL 最多重试次数（包含第一次），用于处理“null”的情况
 MAX_RETRY_PER_URL = 2
@@ -232,8 +232,15 @@ def main():
     print(f"[*] 读取 Excel: {XLSX_PATH}")
     df = pd.read_excel(XLSX_PATH)
 
+    # ==== 新增功能：如果没有 URL 列，则在列尾自动创建 ====
     if URL_COLUMN not in df.columns:
-        raise RuntimeError(f"Excel 中未找到列 '{URL_COLUMN}'，请先确保已生成 URL 列。")
+        print(
+            f"[!] Excel 中未找到列 '{URL_COLUMN}'，已自动在最后新增该列（内容为空）。"
+        )
+        df[URL_COLUMN] = None
+    else:
+        print(f"[*] 检测到已有 '{URL_COLUMN}' 列，直接使用。")
+    # =====================================================
 
     df = ensure_stat_columns(df)
 
